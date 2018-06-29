@@ -19,13 +19,7 @@ overRevId = addChannel("OverRev", 10, 0, 0,1)
 maxRpmId = addChannel("RPMMax", 10, 0, 0,15000,"RPM")
 speeddiff_id = addChannel("SpeedAxle",10,0,0,160,"MPH")
 gear_id = addChannel("GearCurrent",5,0,0,5,"Gear")
-ShiftXButton = addChannel("SXButton",20,0,0,1)
-
--- Initalize settings
-setTickRate(tickRate) -- Set execution interval in Hz
-sxCanId = 0xE3600 + (256 * sxId)
---println('shiftx2 base id ' ..sxCanId)
-sxInit()
+ShiftXButton = addChannel("SXButton",10,0,0,1)
 
 
 -- Custom Functions
@@ -67,12 +61,6 @@ function WarnCheck()
  if WaterTemp > WaterTWarn then Warning = 1 end
 
  setGpio(2,Warning)
-end
-
-
--- updateSpeedDiff updates the dynamic channel for speed messured at the Differential in MPH
-function updateSpeedDiff()
-
 end
 
 
@@ -316,6 +304,11 @@ end
 function spl(v) return bit.band(v,0xFF) end
 function sph(v) return bit.rshift(bit.band(v,0xFF00),8) end
 
+
+-- Initalize settings
+setTickRate(tickRate) -- Set execution interval in Hz
+sxCanId = 0xE3600 + (256 * sxId)
+sxInit()
 
 -- Master execution function
 function onTick()
