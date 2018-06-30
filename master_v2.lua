@@ -1,9 +1,5 @@
 -- Global Constants
-tickRate=30  -- rate in Hz that the main function executes
 WaterTWarn = 240  --  Maximum water temperature to trigger warning in F
-sxCan = 1 -- What CAN bus ShiftX2 is connected to. 0=CAN1, 1=CAN2
-sxId=0 -- 0=first ShiftX2 on bus, 1=second ShiftX2 (if ADR1 jumper is cut)
-
 
 -- Global Variables
 maxRpm = 0  -- variable for tracking max rpm
@@ -275,7 +271,7 @@ function sxInit()
 end
 
 function sxChkCan()
-  id,ext,data=rxCAN(sxCan,0)
+  id,ext,data=rxCAN(1,0) -- What CAN bus ShiftX2 is connected to. 0=CAN1, 1=CAN2
   if id==sxCanId then sxInit() end
   if id==sxCanId+60 and sxOnBut~=nil then sxOnBut(data[1]) end
 end
@@ -286,7 +282,7 @@ function sxProcess()
 end
 
 function sxTx(offset, data)
-  txCAN(sxCan, sxCanId + offset, 1, data)
+  txCAN(1, sxCanId + offset, 1, data) -- What CAN bus ShiftX2 is connected to. 0=CAN1, 1=CAN2
   sleep(10)
 end
 
@@ -295,8 +291,8 @@ function sph(v) return bit.rshift(bit.band(v,0xFF00),8) end
 
 
 -- Initalize settings
-setTickRate(tickRate) -- Set execution interval in Hz
-sxCanId = 0xE3600 + (256 * sxId)
+setTickRate(30) -- Set execution interval in Hz
+sxCanId = 0xE3600 + (256 * 0) -- 0=first ShiftX2 on bus, 1=second ShiftX2 (if ADR1 jumper is cut)
 sxInit()
 
 -- Master execution function
