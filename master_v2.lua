@@ -17,22 +17,12 @@ Fuel1Id = addChannel("FuelRaw", 10, 1, 0,17,"GAL")
 Fuel2Id = addChannel("FuelRemain", 10, 1, 0,17,"GAL")
 overRevId = addChannel("OverRev", 10, 0, 0,1)
 maxRpmId = addChannel("RPMMax", 10, 0, 0,15000,"RPM")
-speeddiff_id = addChannel("SpeedAxle",10,0,0,160,"MPH")
+speeddiff_id = addChannel("SpeedWheel",10,0,0,160,"MPH")
 gear_id = addChannel("GearCurrent",5,0,0,5,"Gear")
 ShiftXButton = addChannel("SXButton",10,0,0,1)
 
 
 -- Custom Functions
-
--- If Start/Finish is detected, start logging to the SD Card
-function BeginSDLogging()
- if getAtStartFinish() == 1 then
-  if isLogging() == 0 then
-   startLogging()
-  end
- end
-end
-
 
 -- WarnCheck controls the state of a GPIO for a master warning light based on OT, WT, OP constants
 -- For Oil Pressure, it will only sound if the engine is running over 500 RPMs
@@ -79,10 +69,9 @@ function  updateSpdDiff_Gear()
  
  local rpm = getTimerRpm(0)
  local rpm_diff = getTimerRpm(1)
- local speed = rpm_diff*tirediameter*0.002975
+ local speed = (rpm_diff*tirediameter*0.002975) + 0.5 -- round because 0 prec. truncates
  
- speed = speed + 0.5 -- round because 0 prec. truncates
- setChannel(speeddiff_id, speed)
+ setChannel(speeddiff_id, speed) -- Update SpeedWheel
  
   if speed > 2 then
   ratio = rpm/(rpm_diff*final)
@@ -227,7 +216,7 @@ function sxOnInit()
   sxSetLinearThresh(0,0,ShiftLightGrn,0,255,0,0) --green 
   sxSetLinearThresh(1,0,ShiftlightRed,255,0,0,0) --red 
   sxSetLinearThresh(2,0,ShiftlightBlu,0,0,255,0) --blue
-    sxSetLinearThresh(3,0,ShiftlightFlash,0,0,255,10) --blue+flash  
+  sxSetLinearThresh(3,0,ShiftlightFlash,0,0,255,10) --blue+flash  
 
   --configure first alert (right LED) as engine temperature (F)
   sxSetAlertThresh(0,0,(WaterTWarn-20),255,255,0,0) --yellow warning
@@ -312,7 +301,6 @@ sxInit()
 
 -- Master execution function
 function onTick()
- BeginSDLogging()
  FanControl()
  updateFuel(GetFuelLevelRaw())
  RevCheck()
