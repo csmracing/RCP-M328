@@ -101,8 +101,7 @@ end
 --  If GPS speed is below 10 mph, average fuel level is set to raw.
 --  The function accepts an argument value for the current fuel reading.
 function updateFuel(value)
---adjust sample rate for tickrate
- if fuelsampcnt < (tickRate / 10) then
+ if fuelsampcnt < 3 then --adjust sample rate for tickrate
   fuelsampcnt = fuelsampcnt + 1
  else
   fuelsampcnt = 1
