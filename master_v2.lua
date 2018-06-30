@@ -101,49 +101,39 @@ end
 --  If GPS speed is below 10 mph, average fuel level is set to raw.
 --  The function accepts an argument value for the current fuel reading.
 function updateFuel(value)
- if fuelsampcnt < 3 then --adjust sample rate for tickrate
-  fuelsampcnt = fuelsampcnt + 1
- else
-  fuelsampcnt = 1
   local i
   local SpeedMPH = getGpsSpeed()
   local AccX = math.abs(getImu(0))
   local AccY = math.abs(getImu(1))
-  local LowAcc = 0
- 
-  if AccX < 0.35 then
-   if AccY < 0.35 then
-    LowAcc = 1
-   end
-  end
 
-  if #fuelAvg == 0 then
+  if #fuelAvg == 0 then --init the fuel averaging array
    for i = 1, maxAvg do fuelAvg[i]=value end
   end
 
 -- only update fuel average if G are less than .35 in any direction
-  if LowAcc == 1 then 
+  if AccX < 0.35 and  AccY < 0.35 then 
    fuelAvg[fuel2Index] = value
-  
    fuel2Index = fuel2Index + 1
-  
    if fuel2Index > maxAvg then fuel2Index = 1 end
   end
 
-  local sum = 0
-
-  for i = 1, #fuelAvg do
-   sum = sum + fuelAvg[i]
-  end
 
   if SpeedMPH < 10 then
-   setChannel(Fuel2Id, value)
+   setChannel(Fuel2Id, value) --if speed <10 then display raw value instead of average
   else
-   setChannel(Fuel2Id, round((sum / maxAvg),1))
+     if fuelsampcnt < 3 then --adjust sample rate for tickrate
+       fuelsampcnt = fuelsampcnt + 1
+    else
+       fuelsampcnt = 1
+       local sum = 0
+       for i = 1, #fuelAvg do
+         sum = sum + fuelAvg[i]
+       end
+       setChannel(Fuel2Id, round((sum / maxAvg),1)) --update average
+	end
   end
   
   setChannel(Fuel1Id, value)
- end
 end
 
 -- round simply rounds a number to the specified number of decimal places.
