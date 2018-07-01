@@ -171,7 +171,7 @@ function sxOnInit()
 end
 
 function sxOnBut(b)
-  if sxb == 1 and (lasttime+1500) < getUpTime() then
+  if sxb == 1 and (lasttime+1500) < getUptime() then
      sxShift()
 	 sxb=0
   else
