@@ -17,7 +17,7 @@ function sxOnUpdate()
 
 function sxOnInit()
   --config pit speedo
-  sxCfgLinearGraph(1,0,300,400) --center-out graph, linear style, 30-40 mph 35 center scaled * 100
+  sxCfgLinearGraph(1,0,300,400) --center-out graph, linear style, 30-40 mph 35 center scaled * 10
 
   sxSetLinearThresh(0,0,300,0,255,0,0) --Green, too slow, go faster (30-34 mph)
   sxSetLinearThresh(1,0,340,0,0,255,0) --blue right at 35 mph (34-36 mph)
