@@ -1,6 +1,8 @@
 -- Global Variables
 lasttime=0 --last execute time
-sxb = 0 --shiftx button state
+btntime=0 --last time shiftx button pressesd
+sxb = 0 --shiftx mode, 0 = Shift Light, 1 = Pit Lane Speed
+
 
 -- Dynamic RCP Channels
 Fuel1Id = addChannel("FuelRaw", 10, 1, 0,17,"GAL")
@@ -104,12 +106,20 @@ end
 -- Update ShiftX2 alerts or linear graph during run time.
 -- Runs continuously based on tickRate.
 function sxOnUpdate()
-  --Update Direct RPM on input 0
-  if sxb == 1 then
-    sxUpdateLinearGraph(getGpsSpeed())
+  if sxb == 1 then  
+    -- Pit lane speed mode.  Ensure speed values don't exceed either end of the range.
+	local pitspeed = getGpsSpeed()
+	if pitspeed > 40 then pitspeed = 40 end
+	if pitspeed < 30 then pitspeed = 30 end
+	sxUpdateLinearGraph((pitspeed-30)*10)
   else
-    sxUpdateLinearGraph(getTimerRpm(0))
+    -- Shift light mode.  Ensure speed values don't exceed either end of the range.
+	local pitrevs = getTimerRpm(0)
+	if pitrevs > 7200 then pitrevs = 7200 end
+	if pitrevs < 4700 then pitrevs = 4700 end
+	sxUpdateLinearGraph(pitrevs-4700)
   end
+
   --update engine temp alert
   sxUpdateAlert(0, getAnalog(2))
     
@@ -119,20 +129,20 @@ end
 
 function sxShift()
  --config shift light
-  sxCfgLinearGraph(0,0,0,7200) --left to right graph, linear style, 0 - 7200 RPM range
+  sxCfgLinearGraph(0,0,0,2500) --left to right graph, linear style, 4700 - 7200 RPM range (0-2500)
 
-  sxSetLinearThresh(0,0,5000,0,255,0,0) -- green 
-  sxSetLinearThresh(1,0,6700,255,0,0,0) -- red 
-  sxSetLinearThresh(2,0,7100,0,0,255,10) -- blue+flash 
+  sxSetLinearThresh(0,0,1,0,255,0,0) -- green on at 4701 
+  sxSetLinearThresh(1,0,1800,255,0,0,0) -- red on at 6500
+  sxSetLinearThresh(2,0,2300,0,0,255,10) -- blue+flash on at 7000
  end
 
 function sxPit()
   --config pit speedo
-  sxCfgLinearGraph(1,0,30,40) --center-out graph, linear style, 30-45 mph 35 center
+  sxCfgLinearGraph(1,0,0,100) --center-out graph, linear style, 30-40 mph 35 center scaled * 100
 
-  sxSetLinearThresh(0,0,30,0,255,0,0) --Green, too slow, go faster
-  sxSetLinearThresh(1,0,35,0,0,255,0) --blue right at 35 mph
-  sxSetLinearThresh(2,0,40,255,0,0,0) --red, too fast, slow down
+  sxSetLinearThresh(0,0,0,0,255,0,0) --Green, too slow, go faster (30-33.4 mph)
+  sxSetLinearThresh(1,0,35,0,0,255,0) --blue right at 35 mph (33.5-35.1 mph)
+  sxSetLinearThresh(2,0,52,255,0,0,10) --red, too fast, slow down (35.2-40 mph)
  end
 
 function sxOnInit()
@@ -150,15 +160,15 @@ function sxOnInit()
 end
 
 function sxOnBut(b)
-	 println('Button!')
-  if sxb == 1 and (lasttime+1500) < getUptime() then
-     sxShift()
-	 sxb=0
-	 println('SBX 0')
-  else
-     sxPit()
-	 sxb=1
-	 println('SBX 1')
+  if (btntime+2000) < getUptime() then
+    btntime=getUptime()	 
+    if sxb == 1 then
+      sxShift()
+	  sxb=0
+    else
+      sxPit()
+	  sxb=1
+    end
   end
 end
 
